@@ -1,6 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 export const HomePage = ()=> {
+
+    const navigate = useNavigate();
     return <div className='flex justify-center items-center h-screen'>
         
       <div className='flex flex-col md:flex-row justify-around max-w-screen-lg w-full px-4'>
@@ -22,7 +25,7 @@ export const HomePage = ()=> {
               </form>
             </CardContent>
             <CardFooter className='flex justify-center'>
-              <Button className='bg-black hover:bg-radiantOrange text-white font-bold py-1 px-10 rounded'> Sell assets </Button>
+              <Button onClick = {()=>{navigate('/sell')}}className='bg-black hover:bg-radiantOrange text-white font-bold py-1 px-10 rounded'> Sell assets </Button>
             </CardFooter>
           </Card>
           <Card className='w-full md:w-[350px]'>
@@ -40,7 +43,7 @@ export const HomePage = ()=> {
               </form>
             </CardContent>
             <CardFooter className='flex justify-center'>
-              <Button className='bg-black hover:bg-radiantOrange text-white font-bold py-1 px-10 rounded'> Buy assets </Button>
+              <Button onClick={()=>{navigate("/buy")}}className='bg-black hover:bg-radiantOrange text-white font-bold py-1 px-10 rounded'> Buy assets </Button>
             </CardFooter>
           </Card>
       </div>

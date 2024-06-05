@@ -12,8 +12,6 @@ import {
     WalletModalProvider
 } from '@solana/wallet-adapter-react-ui';
 
-// Default styles that can be overridden by your app
-
 
 const WalletContext: FC<{ children: ReactNode }> = ({ children }) => {
     // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
