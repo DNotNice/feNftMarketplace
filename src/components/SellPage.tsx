@@ -15,6 +15,8 @@ export const SellPage = ()=>{
     const [description, setDescription] = useState<string>('');
     const [price , setPrice] = useState<number>(0);
     const [approve , setApprove] = useState<boolean>(false);
+    const [uploadingButton , setUploadingButton] = useState<boolean>(false);
+    const [selectImage , setSelectImage]  = useState<boolean>(false);
 
     const handleImageUpload = (e : ChangeEvent<HTMLInputElement>) => {
         if(e.target.files){
@@ -37,6 +39,7 @@ export const SellPage = ()=>{
     
     const handleSubmit = (e: FormEvent) => {
       e.preventDefault();
+    
        if (!title  || !price) {
         toast.error("Please fill in all required fields.", { duration: 1000 });
         return;
@@ -45,9 +48,14 @@ export const SellPage = ()=>{
         toast.error("Please accept the terms and conditions.", { duration: 3000 });
         return ;
       }
-      
+      setSelectImage(true);
+      setUploadingButton(true);
       // Add your submit logic here
-      toast.success(title +"\n"+description+"\n"+ price ,{duration:1000})
+      toast.success(title +"\n"+description+"\n"+ price ,{duration:3000}) 
+      setTimeout(()=>{
+        setSelectImage(false)
+        setUploadingButton(false)
+      } , 3000)
     };
   
 
@@ -78,7 +86,7 @@ export const SellPage = ()=>{
           
         </CardContent>
         <CardFooter>
-          <Button>
+          <Button disabled ={selectImage}>
             <label htmlFor="imageUpload" className="cursor-pointer">
               Upload Images
               </label>
@@ -130,7 +138,7 @@ export const SellPage = ()=>{
               Accept Terms and Conditions 
             </Label>
             <div className="my-4">
-            <Button  onClick={handleSubmit}>Publish</Button>
+            <Button disabled={uploadingButton} onClick={handleSubmit}>Publish</Button>
               </div>  
           </div>
           </div>
