@@ -6,17 +6,19 @@ import { Input } from "./ui/input"
 import { TrashIcon } from "@heroicons/react/16/solid"
 import { toast, Toaster } from 'react-hot-toast';
 import { ChangeEvent, FormEvent, useState } from "react"
-import { Checkbox } from "@/components/ui/checkbox"
-
-
+import { useWallet } from "@solana/wallet-adapter-react"
+import axios from 'axios';
 export const SellPage = ()=>{
+    const backendURL = import.meta.env.VITE_BACKEND_URL;
     const [images, setImages] = useState<string[]>([]);
     const [title , setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [price , setPrice] = useState<number>(0);
-    const [approve , setApprove] = useState<boolean>(false);
     const [uploadingButton , setUploadingButton] = useState<boolean>(false);
     const [selectImage , setSelectImage]  = useState<boolean>(false);
+    const [allowdSignature , setAllowedSignature]  = useState<boolean>(false);
+    const { publicKey , signMessage} = useWallet();
+
 
     const handleImageUpload = (e : ChangeEvent<HTMLInputElement>) => {
         if(e.target.files){
@@ -28,6 +30,7 @@ export const SellPage = ()=>{
     const handleImageDelete = (index : number) => {
       setImages((prevImages) => prevImages.filter((_, i) => i !== index));
     };
+
     const handlePriceInput = (e: ChangeEvent<HTMLInputElement>) => {
       const newPrice = e.target.value ;
       if (/[^0-9.]/.test(newPrice) || (newPrice.split('.').length - 1 > 1)) {
@@ -37,26 +40,67 @@ export const SellPage = ()=>{
       setPrice(Number(newPrice));
     };
     
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async(e: FormEvent) => {
       e.preventDefault();
     
        if (!title  || !price) {
         toast.error("Please fill in all required fields.", { duration: 1000 });
         return;
       }
-      else if (!approve) {
-        toast.error("Please accept the terms and conditions.", { duration: 3000 });
-        return ;
+      if(images.length == 0 ) {
+        toast.error("Please add in some images.", { duration: 1000 });
+        return;
       }
-      setSelectImage(true);
-      setUploadingButton(true);
-      // Add your submit logic here
-      toast.success(title +"\n"+description+"\n"+ price ,{duration:3000}) 
-      setTimeout(()=>{
-        setSelectImage(false)
-        setUploadingButton(false)
-      } , 3000)
+     
+       setSelectImage(true);
+      setUploadingButton(true); 
+
+       await signMessageFunction();
+
+       console.log('allowdSignature', allowdSignature)
+          if(allowdSignature){
+            toast.success("signature received , generating preSigned URL")
+             const response = await generatePreSignedUrl();
+             
+             
+
+             uploadtoS3();
+          } 
+         else {
+          toast.error("Wallet not connected or message not signed.", { duration: 1000 });
+         }
+         setSelectImage(false);
+         setUploadingButton(false); 
+
+
     };
+    const signMessageFunction = async()=>{
+      if (!publicKey) {return; }
+      const message = new TextEncoder().encode("Sign into MarketSpace");
+      try {
+      const signature = await signMessage?.(message);
+        if(typeof(signature) == "object") setAllowedSignature(true);
+      const response = await axios.post(`${backendURL}signin`, {
+          signature,
+          publicKey: publicKey?.toString()
+      });
+      
+      if(response.data.token){
+        localStorage.setItem("token", response.data.token);
+      }else setAllowedSignature(false)
+      
+    } catch (error) {
+        setAllowedSignature(false)
+    }
+    }
+    
+    const generatePreSignedUrl = async()=>{
+
+    }
+
+    const uploadtoS3 = ()=>{
+      
+    }
   
 
     return (
@@ -130,17 +174,9 @@ export const SellPage = ()=>{
         </CardContent>
         <CardFooter>
           <div className="items-top flex space-x-2">
-
-          <Checkbox id="terms" checked={approve} onChange={()=>{setApprove(!approve)}}/>
-            <div className="grid gap-1.5 leading-none">
-            <Label onClick={()=>{setApprove(!approve)}}htmlFor="terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Accept Terms and Conditions 
-            </Label>
-            <div className="my-4">
+           
             <Button disabled={uploadingButton} onClick={handleSubmit}>Publish</Button>
-              </div>  
-          </div>
+           
           </div>
           
         
