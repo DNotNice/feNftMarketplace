@@ -6,21 +6,25 @@
     export const AppBar =()=>{
 
         const {toast} = useToast();
-        const {connected , publicKey } = useWallet();
+        const {connected} = useWallet();
         const navigate = useNavigate();
         useEffect(()=>{
-            if(connected)toast({ description : "Connected to wallet" + publicKey})
-                else toast({description:"disconnected"})
+            if(connected)toast({ description : "Wallet Connected"})
+                else toast({description:"Wallet Disconnected"})
         }, [connected])
 
-        return  <div className="flex justify-between border-b pb-2 pt-2 ">
-        <div onClick={()=>{navigate('/')}} className="scroll-m-20 text-3xl font-extrabold tracking-tight lg:text-4xl ml-4  cursor-pointer">
-            MarketSpace
-        </div>
-        <div className='mr-4'>    
-        <WalletMultiButton/>
-        </div>
-    
-    </div>
+        return (
+            <div className="flex justify-between items-center border-b pb-2 pt-2 px-4 sm:px-6 lg:px-8">
+            <div
+              onClick={() => { navigate('/') }}
+              className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight cursor-pointer"
+            >
+              MarketSpace
+            </div>
+            <div className='mr-4'>
+              <WalletMultiButton />
+            </div>
+          </div>
+        );
 
 }
