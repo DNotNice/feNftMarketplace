@@ -1,27 +1,33 @@
-import { Button } from "./ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
+import { useEffect, useState } from "react"
+import axios from "axios";
+import { CarouselWithCards } from "./ui/caraouselcard";
 
 export const BuyPage = ()=>{
-    return (
+ const backendURL = import.meta.env.VITE_BACKEND_URL;
+ const[ data , setData] = useState<Array<Object>>([]);
+
+  useEffect( ()=>{
+    const fetchData = async ()=>{
+      const response =  await axios.get(`${backendURL}v1/buy/all`)
+      JSON.stringify(response.data)
+      console.log( response.data);
+      setData(response.data)
+      return ;
+    }
+
+    fetchData();
+    JSON.stringify(data)
+
+  },[])
+
+    return (  
+         data.length == 0 ? (<h1>Thank You for Supporting MarketSpace</h1>) : (
         <div>
-        <Card className="">
-        <CardHeader>
-          <CardTitle> Buy </CardTitle>
-          <CardDescription> Buy assets here</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form>
-            <div className='grid w-full gap-4'>
-              <div className='flex flex-col space-y-1.5'>
-                
-              </div>
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter className='flex justify-center'>
-          <Button className='bg-black hover:bg-radiantOrange text-white font-bold py-1 px-10 rounded'> Buy </Button>
-        </CardFooter>
-        </Card>
-    </div>
-    )
-}
+        {data.map((item: any) => (
+        <CarouselWithCards  key={item.id}
+          carouselData={item.Image_urls}
+          cardData={{ name: item.name,description: item.description,price: item.price,status: item.status, id : item.id }}/>
+        ))}
+          
+         </div>  
+         ))}
