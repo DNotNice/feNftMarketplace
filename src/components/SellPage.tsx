@@ -18,8 +18,10 @@ export const SellPage = () => {
   const [uploadingButton, setUploadingButton] = useState<boolean>(false);
   const [selectImage, setSelectImage] = useState<boolean>(false);
   const { publicKey, signMessage } = useWallet();
+
+  
   const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
+    if (event.target.files ) {
       //@ts-ignore
       setImages((prevImages) => [...prevImages, ...Array.from(event?.target.files)]);
     }
@@ -60,12 +62,13 @@ export const SellPage = () => {
       toast.success("Signature received, uploading images" ,{duration:1000});
       const response  = await uploadtoS3();
       console.log(response);
+      setTimeout(()=>{location.reload()} , 1000)
     } else {
       toast.error("Wallet not connected or message not signed.", { duration: 1000 });
     }
     setSelectImage(false);
     setUploadingButton(false);
-    location.reload();
+    
   };
 
 
