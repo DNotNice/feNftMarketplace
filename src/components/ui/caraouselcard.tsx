@@ -13,7 +13,7 @@ interface CarouselCardProps {
     id: number;
   };
   carouselData: string[];
-  onBuy: (id: number) => void;
+  onBuy: (price : number ,id: number) => void;
 }
 
 const CarouselCard: React.FC<CarouselCardProps> = ({ cardData, carouselData, onBuy }) => {
@@ -29,7 +29,7 @@ const CarouselCard: React.FC<CarouselCardProps> = ({ cardData, carouselData, onB
   };
 
   const handleBuy = () => {
-    onBuy(cardData.id);
+    onBuy(cardData.price ,cardData.id);
     toast.success('Purchase successful!');
   };
 
@@ -81,7 +81,7 @@ const CarouselCard: React.FC<CarouselCardProps> = ({ cardData, carouselData, onB
           </CardHeader>
         </div>
         <CardFooter className="flex items-center justify-between">
-          <div className="text-xl font-bold">${cardData.price}</div>
+          <div className="text-xl font-bold">eth {cardData.price}</div>
           {cardData.status === 'AVAILABLE' ? (
             <Button size="lg" onClick={handleBuy}>
               Buy Now
@@ -103,7 +103,7 @@ function ChevronLeftIcon(props: any) {
       {...props}
       xmlns="http://www.w3.org/2000/svg"
       width="24"
-      height="24"
+      height="30"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

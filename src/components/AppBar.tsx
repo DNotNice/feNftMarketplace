@@ -19,7 +19,7 @@
               onClick={() => { navigate('/') }}
               className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight cursor-pointer"
             >
-              MarketSpace
+              minTunes
             </div>
             <div className='mr-4'>
               <WalletMultiButton />

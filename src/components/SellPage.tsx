@@ -3,13 +3,13 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
-import { TrashIcon } from "@heroicons/react/16/solid";
+import AudioComponent from "@/components/ui/AudioComponent";
 import { toast, Toaster } from 'react-hot-toast';
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import axios from 'axios';
+import axios, { all } from 'axios';
 
-export const SellPage = () => {
+export const  SellPage = () => {
   const backendURL = import.meta.env.VITE_BACKEND_URL;
   const [images, setImages] = useState<File[]>([]);
   const [title, setTitle] = useState<string>('');
@@ -18,8 +18,32 @@ export const SellPage = () => {
   const [uploadingButton, setUploadingButton] = useState<boolean>(false);
   const [selectImage, setSelectImage] = useState<boolean>(false);
   const { publicKey, signMessage } = useWallet();
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
 
-  
+  const handleStartRecording = (): void => {
+    setIsRecording(true);
+  };
+
+  const handleStopRecording = (audioUrl: string): void => {
+    setIsRecording(false);
+    setRecordedAudioUrl(audioUrl);
+  };
+
+  const selectImageURL = ()=>{
+    const urls = [
+             " 8/0.9563818898981584/images/photo-1578309793896-2a825b041f57.avif",
+              "8/0.9563818898981584/images/photo-1578309876267-d2205176bafd.avif",
+              "8/0.9563818898981584/images/photo-1578589318433-39b5de440c3f.avif",
+              "8/0.9563818898981584/images/photo-1578589385589-c94a956e2450.avif",
+              "8/0.9563818898981584/images/photo-1579818276653-bc3240840cf6.avif",
+              "8/0.9563818898981584/images/premium_photo-1666900280333-1c575ce7f3f5.avif",
+              "8/0.9563818898981584/images/photo-1481966115753-963394378f23.avif",
+              "8/0.9563818898981584/images/photo-1574169208507-84376144848b.avif"
+            ]
+    return urls[ Math.floor(Math.random() * 6)];
+  }
+
   const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files ) {
       //@ts-ignore
@@ -48,24 +72,23 @@ export const SellPage = () => {
       return;
     }
 
-    if (images.length === 0) {
-      toast.error("Please add in some images.", { duration: 1000 });
-      return;
-    }
-
+    
     setSelectImage(true);
     setUploadingButton(true);
 
-    const signatureReceived = await signMessageFunction();
+     const signatureReceived = await signMessageFunction();
 
     if (signatureReceived) {
-      toast.success("Signature received, uploading images" ,{duration:1000});
-      const response  = await uploadtoS3();
-      console.log(response);
-      setTimeout(()=>{location.reload()} , 1000)
-    } else {
-      toast.error("Wallet not connected or message not signed.", { duration: 1000 });
-    }
+     toast.success("Signature received, uploading images" ,{duration:1000});
+     const url = selectImageURL();
+     const response  = await uploadtoS3(url);
+     console.log(response);
+     
+
+       setTimeout(()=>{location.reload()} , 1000) 
+     } else {
+       toast.error("Wallet not connected or message not signed.", { duration: 1000 });
+     }
     setSelectImage(false);
     setUploadingButton(false);
     
@@ -90,37 +113,38 @@ export const SellPage = () => {
     }
   };
 
-  const uploadtoS3  = async () => {
-    const allUrls = [];
+  const uploadtoS3  = async (url : String) => {
+     const allUrls = [];
   
-    for (const image of images) {
-      try {
-        const response = await generatePreSignedUrl();
-        const preSignedURL = response.preSignedUrl;
-        const fields = response.fields;
-        const formData = new FormData();
+    // for (const image of images) {
+    //   try {
+    //     const response = await generatePreSignedUrl();
+    //     const preSignedURL = response.preSignedUrl;
+    //     const fields = response.fields;
+    //     const formData = new FormData();
 
-        formData.append("bucket", fields["bucket"]);
-        formData.append("X-Amz-Algorithm", fields["X-Amz-Algorithm"]);
-        formData.append("X-Amz-Credential", fields["X-Amz-Credential"]);
-        formData.append("X-Amz-Date", fields["X-Amz-Date"]);
-        formData.append("key", fields["key"]);
-        formData.append("Policy", fields["Policy"]);
-        formData.append("X-Amz-Signature", fields["X-Amz-Signature"]);
-        formData.append("file", image);
+    //     formData.append("bucket", fields["bucket"]);
+    //     formData.append("X-Amz-Algorithm", fields["X-Amz-Algorithm"]);
+    //     formData.append("X-Amz-Credential", fields["X-Amz-Credential"]);
+    //     formData.append("X-Amz-Date", fields["X-Amz-Date"]);
+    //     formData.append("key", fields["key"]);
+    //     formData.append("Policy", fields["Policy"]);
+    //     formData.append("X-Amz-Signature", fields["X-Amz-Signature"]);
+    //     formData.append("file", image);
         
   
-        await axios.post(preSignedURL, formData);
+    //     await axios.post(preSignedURL, formData);
   
-        allUrls.push(fields["key"]);
-      } catch (error) {
-        console.error("Error uploading to S3:", error);
-        toast.error("Error uploading image to S3", { duration: 3000 });
-        return; 
-      }
-    }
+    //     allUrls.push(fields["key"]);
+    //   } catch (error) {
+    //     console.error("Error uploading to S3:", error);
+    //     toast.error("Error uploading image to S3", { duration: 3000 });
+    //     return; 
+    //   }
+    // }
   
     try {
+      allUrls.push(url);
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("Authorization token is missing");
@@ -177,7 +201,7 @@ export const SellPage = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto p-4 md:p-8">
       <Toaster />
-      <Card className="flex flex-col">
+      {/* <Card className="flex flex-col">
         <CardHeader>
           <CardTitle>Image Upload</CardTitle>
           <CardDescription>Upload your images and they will be displayed in a grid.</CardDescription>
@@ -211,7 +235,25 @@ export const SellPage = () => {
             onChange={handleImageUpload}
           />
         </CardFooter>
-      </Card>
+      </Card> */}
+       <Card className='bg-o'>
+              <CardHeader>
+                <CardTitle>Record</CardTitle>
+                <CardDescription>
+                  Record your voice here
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className='flex justify-normal'>
+                  <AudioComponent
+                    isRecording={isRecording}
+                    onStartRecording={handleStartRecording}
+                    onStopRecording={handleStopRecording}
+                    audioUrl={recordedAudioUrl}
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
       <Card className="flex flex-col">
         <CardHeader>
@@ -234,7 +276,7 @@ export const SellPage = () => {
             <Label htmlFor="price">Price *</Label>
             <div className="flex items-center space-x-2">
               <Input required onChange={handlePriceInput} id="price" placeholder="0.1" className="w-25" />
-              <span>Sol</span>
+              <span>eth</span>
             </div>
           </div>
         </CardContent>
